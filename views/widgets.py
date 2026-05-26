@@ -35,13 +35,12 @@ class BarraSuperior(BoxLayout):
         self.bind(size=self._upd, pos=self._upd)
 
         btn_back = Button(
-            text="← Atrás",
+            text="<- Atrás",
             size_hint=(None, 1),
             width=100,
             background_color=AZUL,
             color=BLANCO,
             font_size=14,
-            font_name="seguiemj",
         )
         btn_back.bind(on_press=lambda x: setattr(manager, "current", destino))
 
