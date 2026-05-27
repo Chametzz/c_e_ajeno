@@ -351,7 +351,7 @@ class PantallaGrupos(Screen):
             )
 
             btn_s = Button(
-                text="💾",
+                text="Guardar",
                 size_hint=(None, 1),
                 width=dp(52),
                 background_color=VERDE,

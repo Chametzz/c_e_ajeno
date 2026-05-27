@@ -343,6 +343,29 @@ class CalificacionModel:
         return ejecutar_vista("v_calificaciones")
 
     @staticmethod
+    def todas_con_id():
+        """Igual que todas() pero incluye id_calificacion para poder editar."""
+        with get_connection() as conn:
+            rows = conn.execute("""
+                SELECT c.id_calificacion,
+                       e.num_control,
+                       e.nombre || ' ' || e.apellidos AS estudiante,
+                       m.nombre                        AS materia,
+                       ps.nombre                       AS periodo,
+                       c.calificacion_parcial,
+                       c.calificacion_final,
+                       c.observaciones
+                FROM calificacion        c
+                JOIN grupo_estudiante    ge  ON ge.id_grupo_est = c.id_grupo_est
+                JOIN estudiante          e   ON e.id_estudiante = ge.id_estudiante
+                JOIN grupo               g   ON g.id_grupo      = ge.id_grupo
+                JOIN materia             m   ON m.id_materia     = g.id_materia
+                JOIN periodo_semestral   ps  ON ps.id_periodo    = g.id_periodo
+                ORDER BY ps.nombre, e.apellidos, e.nombre
+            """).fetchall()
+            return [dict(r) for r in rows]
+
+    @staticmethod
     def por_grupo(id_grupo):
         with get_connection() as conn:
             rows = conn.execute("""

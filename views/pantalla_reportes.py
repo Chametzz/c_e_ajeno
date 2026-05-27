@@ -44,11 +44,11 @@ class PantallaReportes(Screen):
         menu.bind(minimum_height=menu.setter("height"))
 
         reportes = [
-            ("📋  Todas las calificaciones", self._rep_calificaciones),
-            ("👥  Estudiantes por grupo", self._rep_est_grupo),
-            ("📚  Materias por carrera", self._rep_mat_carrera),
-            ("👨‍🏫  Grupos por profesor", self._rep_grupos_prof),
-            ("🏆  Promedio general por materia", self._rep_promedios),
+            ("Todas las calificaciones", self._rep_calificaciones),
+            ("Estudiantes por grupo", self._rep_est_grupo),
+            ("Materias por carrera", self._rep_mat_carrera),
+            ("Grupos por profesor", self._rep_grupos_prof),
+            ("Promedio general por materia", self._rep_promedios),
         ]
 
         for texto, fn in reportes:

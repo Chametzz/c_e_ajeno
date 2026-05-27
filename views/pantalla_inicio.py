@@ -63,15 +63,15 @@ class PantallaInicio(Screen):
         menu.bind(minimum_height=menu.setter("height"))
 
         opciones = [
-            ("👨‍🎓  Estudiantes", "estudiantes"),
-            ("👨‍🏫  Profesores", "profesores"),
-            ("🎓  Carreras", "carreras"),
-            ("📚  Materias", "materias"),
-            ("🏫  Aulas", "aulas"),
-            ("📅  Periodos", "periodos"),
-            ("👥  Grupos", "grupos"),
-            ("📊  Calificaciones", "calificaciones"),
-            ("📋  Reportes", "reportes"),
+            ("Estudiantes", "estudiantes"),
+            ("Profesores", "profesores"),
+            ("Carreras", "carreras"),
+            ("Materias", "materias"),
+            ("Aulas", "aulas"),
+            ("Periodos", "periodos"),
+            ("Grupos", "grupos"),
+            ("Calificaciones", "calificaciones"),
+            ("Reportes", "reportes"),
         ]
         for texto, pantalla in opciones:
             btn = boton_menu(texto, on_press=lambda x, p=pantalla: self.ir_a(p))

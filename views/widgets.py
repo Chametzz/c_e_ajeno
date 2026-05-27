@@ -1,4 +1,5 @@
 # widgets.py
+from kivy.app import App
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
@@ -11,7 +12,6 @@ from kivy.uix.popup import Popup
 from kivy.utils import get_color_from_hex
 from kivy.graphics import Color, Rectangle
 
-
 AZUL = get_color_from_hex("#1565C0")
 ROJO = get_color_from_hex("#C62828")
 VERDE = get_color_from_hex("#2E7D32")
@@ -19,17 +19,35 @@ GRIS = get_color_from_hex("#EEEEEE")
 BLANCO = get_color_from_hex("#FFFFFF")
 NEGRO = get_color_from_hex("#212121")
 
+# Mapa de rol -> menú correspondiente
+_MENU_POR_ROL = {
+    "admin": "menu_admin",
+    "docente": "menu_docente",
+    "estudiante": "menu_estudiante",
+}
+
+
+def _destino_menu():
+    """Devuelve la pantalla de menú según el rol del usuario en sesión."""
+    app = App.get_running_app()
+    rol = getattr(app, "rol_actual", "admin")
+    return _MENU_POR_ROL.get(rol, "menu_admin")
+
 
 class BarraSuperior(BoxLayout):
-    def __init__(self, titulo, manager, destino="inicio", **kwargs):
+    def __init__(self, titulo, manager, destino=None, **kwargs):
         super().__init__(size_hint=(1, None), height=dp(64), **kwargs)
         with self.canvas.before:
             Color(*AZUL)
             self._rect = Rectangle(size=self.size, pos=self.pos)
         self.bind(size=self._upd, pos=self._upd)
 
+        # Si no se pasa destino explícito, usar el menú según el rol actual
+        if destino is None:
+            destino = _destino_menu()
+
         btn_back = Button(
-            text="← Atrás",
+            text="Atras",
             size_hint=(None, 1),
             width=dp(120),
             background_color=AZUL,
