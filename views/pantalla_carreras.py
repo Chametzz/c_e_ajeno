@@ -31,23 +31,18 @@ class PantallaCarreras(Screen):
     def on_pre_enter(self):
         self._build()
 
-    # ── Construcción principal de la pantalla ───────
     def _build(self):
         self.clear_widgets()
         root = BoxLayout(orientation="vertical")
         root.add_widget(BarraSuperior("Carreras", self.manager))
 
-        # Barra de acciones
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
-        btn_n = Button(
-            text="+ Nueva", background_color=VERDE, color=BLANCO,
-            size_hint=(None, 1), width=110,
-        )
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
+        btn_n = Button(text="+ Nueva", background_color=VERDE, color=BLANCO,
+                       size_hint=(None, 1), width=130, font_size=15)
         btn_n.bind(on_press=lambda x: self._form())
         acciones.add_widget(btn_n)
         root.add_widget(acciones)
 
-        # Cargar datos y construir conteo de materias por carrera en un solo pass
         carreras       = CarreraModel.todos()
         todas_materias = MateriaModel.todos()
         conteo = {}
@@ -55,7 +50,6 @@ class PantallaCarreras(Screen):
             cid = m["id_carrera"]
             conteo[cid] = conteo.get(cid, 0) + 1
 
-        # Encabezado de tabla
         cols = ["Clave", "Nombre", "Descripción", "Materias", "Acciones"]
         outer = BoxLayout(orientation="vertical")
         outer.add_widget(TablaEncabezado(cols))
@@ -65,7 +59,7 @@ class PantallaCarreras(Screen):
         grid.bind(minimum_height=grid.setter("height"))
 
         for i, car in enumerate(carreras):
-            fila = BoxLayout(size_hint=(1, None), height=50, spacing=4, padding=(4, 2))
+            fila = BoxLayout(size_hint=(1, None), height=62, spacing=4, padding=(4, 4))
             bg = get_color_from_hex("#F0F4FF") if i % 2 == 0 else BLANCO
             with fila.canvas.before:
                 Color(*bg)
@@ -80,21 +74,16 @@ class PantallaCarreras(Screen):
 
             for txt in [car["clave"], car["nombre"],
                         car.get("descripcion") or "—", badge]:
-                lbl = Label(text=str(txt), color=NEGRO, font_size=12,
+                lbl = Label(text=str(txt), color=NEGRO, font_size=13,
                             halign="center", valign="middle")
                 lbl.bind(size=lbl.setter("text_size"))
                 fila.add_widget(lbl)
 
-            # Tres botones: Editar · Materias · Borrar
-            btns = BoxLayout(spacing=3, size_hint=(None, 1), width=180)
-            b_edit = Button(text="Editar",   font_size=10,
-                            background_color=AZUL,   color=BLANCO)
-            b_mat  = Button(text="Materias", font_size=10,
-                            background_color=MORADO, color=BLANCO)
-            b_del  = Button(text="Borrar",   font_size=10,
-                            background_color=ROJO,   color=BLANCO)
+            btns = BoxLayout(spacing=3, size_hint=(None, 1), width=210)
+            b_edit = Button(text="Editar",   font_size=13, background_color=AZUL,   color=BLANCO)
+            b_mat  = Button(text="Materias", font_size=13, background_color=MORADO, color=BLANCO)
+            b_del  = Button(text="Borrar",   font_size=13, background_color=ROJO,   color=BLANCO)
 
-            # Captura por valor con argumento por defecto (evita closure bug)
             b_edit.bind(on_press=lambda x, c=car: self._form(c))
             b_mat.bind( on_press=lambda x, c=car: self._ver_materias(c))
             b_del.bind( on_press=lambda x, c=car: self._borrar(c))
@@ -106,27 +95,23 @@ class PantallaCarreras(Screen):
             grid.add_widget(fila)
 
         if not carreras:
-            grid.add_widget(Label(
-                text="Sin carreras registradas",
-                color=NEGRO, size_hint=(1, None), height=50,
-            ))
+            grid.add_widget(Label(text="Sin carreras registradas",
+                                  color=NEGRO, size_hint=(1, None), height=56))
 
         scroll.add_widget(grid)
         outer.add_widget(scroll)
         root.add_widget(outer)
         self.add_widget(root)
 
-    # ── Formulario alta / edición ───────────────────
     def _form(self, reg=None):
         contenido = BoxLayout(orientation="vertical", spacing=8, padding=16)
         scroll = ScrollView()
         inner  = BoxLayout(orientation="vertical", size_hint=(1, None), spacing=8)
         inner.bind(minimum_height=inner.setter("height"))
 
-        r1, ti_clave = campo("Clave *", "Ej: ISC, IIA, LCDE")
+        r1, ti_clave = campo("Clave *",       "Ej: ISC, IIA, LCDE")
         r2, ti_nom   = campo("Nombre *",      "Ing. en Sistemas Computacionales")
-        r3, ti_desc  = campo("Descripción",   "Carrera orientada a...",
-                              multiline=True)
+        r3, ti_desc  = campo("Descripción",   "Carrera orientada a...", multiline=True)
 
         for w in [r1, r2, r3]:
             inner.add_widget(w)
@@ -141,21 +126,16 @@ class PantallaCarreras(Screen):
 
         popup = Popup(
             title="Editar carrera" if reg else "Nueva carrera",
-            content=contenido,
-            size_hint=(0.92, 0.65),
+            content=contenido, size_hint=(0.95, 0.72),
         )
 
         def guardar(x):
             clave  = limpiar_texto(ti_clave.text)
             nombre = limpiar_texto(ti_nom.text)
-
             if not clave:
-                popup_mensaje("Error", "La clave es obligatoria.", ROJO)
-                return
+                popup_mensaje("Error", "La clave es obligatoria.", ROJO); return
             if not nombre:
-                popup_mensaje("Error", "El nombre es obligatorio.", ROJO)
-                return
-
+                popup_mensaje("Error", "El nombre es obligatorio.", ROJO); return
             datos = {
                 "clave":       clave,
                 "nombre":      nombre,
@@ -169,21 +149,17 @@ class PantallaCarreras(Screen):
                     CarreraModel.crear(**datos)
                     msg = "Carrera registrada correctamente."
                 popup.dismiss()
-                # Diferir el rebuild al siguiente frame (evita crash por árbol de widgets activo)
                 Clock.schedule_once(lambda dt: self._build(), 0)
                 popup_mensaje("Listo", msg, VERDE)
             except Exception as e:
                 popup_mensaje("Error", str(e), ROJO)
 
-        btn_grd = Button(
-            text="Guardar", background_color=VERDE, color=BLANCO,
-            size_hint=(1, None), height=48, font_size=15,
-        )
+        btn_grd = Button(text="Guardar", background_color=VERDE, color=BLANCO,
+                         size_hint=(1, None), height=58, font_size=16)
         btn_grd.bind(on_press=guardar)
         contenido.add_widget(btn_grd)
         popup.open()
 
-    # ── Confirmación y eliminación ──────────────────
     def _borrar(self, reg):
         def confirmar():
             try:
@@ -191,42 +167,27 @@ class PantallaCarreras(Screen):
                 popup_mensaje("Listo", "Carrera eliminada.", VERDE)
                 Clock.schedule_once(lambda dt: self._build(), 0)
             except Exception as e:
-                # Mensaje explícito cuando hay FK activas (materias / estudiantes)
-                popup_mensaje(
-                    "No se puede eliminar",
-                    "Esta carrera tiene materias o estudiantes asociados.\n"
-                    f"Detalle: {e}",
-                    ROJO,
-                )
+                popup_mensaje("No se puede eliminar",
+                              f"Esta carrera tiene materias o estudiantes asociados.\nDetalle: {e}",
+                              ROJO)
 
-        popup_confirmar(
-            "Eliminar carrera",
-            f"¿Eliminar '{reg['nombre']}'?\n"
-            "Esta acción no se puede deshacer.",
-            confirmar,
-        )
+        popup_confirmar("Eliminar carrera",
+                        f"¿Eliminar '{reg['nombre']}'?\nEsta acción no se puede deshacer.",
+                        confirmar)
 
-    # ── Popup: materias de la carrera ───────────────
     def _ver_materias(self, car):
         mats  = MateriaModel.por_carrera(car["id_carrera"])
         cols  = ["Clave", "Nombre", "Créditos", "Semestre"]
-        filas = [
-            [m["clave"], m["nombre"], str(m["creditos"]), str(m["semestre"])]
-            for m in mats
-        ]
+        filas = [[m["clave"], m["nombre"], str(m["creditos"]), str(m["semestre"])]
+                 for m in mats]
 
         contenido = BoxLayout(orientation="vertical", spacing=8, padding=12)
         contenido.add_widget(TablaScroll(cols, filas))
 
-        popup = Popup(
-            title=f"Materias — {car['nombre']}",
-            content=contenido,
-            size_hint=(0.97, 0.82),
-        )
-        btn_c = Button(
-            text="Cerrar", background_color=AZUL, color=BLANCO,
-            size_hint=(1, None), height=44,
-        )
+        popup = Popup(title=f"Materias — {car['nombre']}",
+                      content=contenido, size_hint=(0.97, 0.84))
+        btn_c = Button(text="Cerrar", background_color=AZUL, color=BLANCO,
+                       size_hint=(1, None), height=56, font_size=15)
         btn_c.bind(on_press=popup.dismiss)
         contenido.add_widget(btn_c)
         popup.open()

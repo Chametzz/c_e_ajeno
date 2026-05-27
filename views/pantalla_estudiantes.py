@@ -5,17 +5,20 @@ CRUD completo de estudiantes con lista, formulario de alta y calificaciones.
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout     import BoxLayout
 from kivy.uix.scrollview    import ScrollView
+from kivy.uix.gridlayout    import GridLayout
 from kivy.uix.button        import Button
 from kivy.uix.label         import Label
 from kivy.uix.textinput     import TextInput
 from kivy.uix.popup         import Popup
 from kivy.uix.spinner       import Spinner
+from kivy.graphics          import Color, Rectangle
+from kivy.utils             import get_color_from_hex
+from kivy.clock             import Clock
 
-from models.modelos          import EstudianteModel, CarreraModel
-from utils.validaciones      import validar_correo, limpiar_texto
-from views.widgets           import (BarraSuperior, TablaScroll,
-                                     popup_confirmar, popup_mensaje, campo)
-from kivy.utils              import get_color_from_hex
+from models.modelos     import EstudianteModel, CarreraModel
+from utils.validaciones import validar_correo, limpiar_texto
+from views.widgets      import (BarraSuperior, TablaEncabezado, TablaScroll,
+                                 popup_confirmar, popup_mensaje, campo)
 
 AZUL   = get_color_from_hex("#1565C0")
 VERDE  = get_color_from_hex("#2E7D32")
@@ -28,19 +31,22 @@ class PantallaEstudiantes(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def on_pre_enter(self):
+        self._build()
+
     def _build(self):
         self.clear_widgets()
         root = BoxLayout(orientation="vertical")
-        root.add_widget(BarraSuperior("Estudiantes", self.manager if hasattr(self, "manager") else None))
+        root.add_widget(BarraSuperior("Estudiantes", self.manager))
 
         # Barra de acciones
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
         btn_nuevo = Button(text="+ Nuevo", background_color=VERDE, color=BLANCO,
-                           size_hint=(None, 1), width=110, font_size=14)
+                           size_hint=(None, 1), width=130, font_size=15)
         btn_nuevo.bind(on_press=self.abrir_form_nuevo)
 
         self.busqueda = TextInput(hint_text="Buscar por nombre o # control...",
-                                  size_hint=(1, 1), font_size=13, multiline=False)
+                                  size_hint=(1, 1), font_size=14, multiline=False)
         self.busqueda.bind(text=self.filtrar)
 
         acciones.add_widget(btn_nuevo)
@@ -53,34 +59,21 @@ class PantallaEstudiantes(Screen):
         root.add_widget(self.contenedor_tabla)
         self.add_widget(root)
 
-    def on_pre_enter(self):
-        self._build()
-        #self._cargar_tabla()
-
     def _cargar_tabla(self, texto=""):
         self.contenedor_tabla.clear_widgets()
-        if texto:
-            registros = EstudianteModel.buscar_nombre(texto)
-        else:
-            registros = EstudianteModel.todos()
+        registros = EstudianteModel.buscar_nombre(texto) if texto else EstudianteModel.todos()
 
         columnas = ["# Control", "Nombre", "Carrera", "Semestre", "Acciones"]
         filas_widgets = BoxLayout(orientation="vertical")
-
-        # Encabezado
-        from views.widgets import TablaEncabezado
         filas_widgets.add_widget(TablaEncabezado(columnas))
 
         scroll = ScrollView()
-        from kivy.uix.gridlayout import GridLayout
         grid = GridLayout(cols=1, size_hint=(1, None), spacing=1)
         grid.bind(minimum_height=grid.setter("height"))
 
         for i, est in enumerate(registros):
-            fila = BoxLayout(size_hint=(1, None), height=44, spacing=4,
-                             padding=(4, 2))
+            fila = BoxLayout(size_hint=(1, None), height=60, spacing=4, padding=(4, 4))
             bg = get_color_from_hex("#F0F4FF") if i % 2 == 0 else BLANCO
-            from kivy.graphics import Color, Rectangle
             with fila.canvas.before:
                 Color(*bg)
                 r = Rectangle(size=fila.size, pos=fila.pos)
@@ -91,26 +84,23 @@ class PantallaEstudiantes(Screen):
                         f"{est['nombre']} {est['apellidos']}",
                         est.get("carrera", ""),
                         str(est["semestre"])]:
-                lbl = Label(text=str(txt), color=NEGRO, font_size=12,
+                lbl = Label(text=str(txt), color=NEGRO, font_size=13,
                             halign="center", valign="middle")
                 lbl.bind(size=lbl.setter("text_size"))
                 fila.add_widget(lbl)
 
-            btns = BoxLayout(spacing=4)
-            b_edit = Button(text="Editar", font_size=11, background_color=AZUL,
-                            color=BLANCO)
-            b_cal  = Button(text="Califs", font_size=11,
-                            background_color=get_color_from_hex("#6A1B9A"),
-                            color=BLANCO)
-            b_del  = Button(text="Borrar", font_size=11, background_color=ROJO,
-                            color=BLANCO)
+            btns = BoxLayout(spacing=3, size_hint=(None, 1), width=195)
+            b_edit = Button(text="Editar", font_size=13, background_color=AZUL,  color=BLANCO)
+            b_cal  = Button(text="Califs", font_size=13,
+                            background_color=get_color_from_hex("#6A1B9A"), color=BLANCO)
+            b_del  = Button(text="Borrar", font_size=13, background_color=ROJO,  color=BLANCO)
 
             eid = est["id_estudiante"]
             b_edit.bind(on_press=lambda x, e=est: self.abrir_form_editar(e))
-            b_cal.bind(on_press=lambda x, i=eid: self.ver_calificaciones(i))
-            b_del.bind(on_press=lambda x, i=eid, e=est: popup_confirmar(
+            b_cal.bind( on_press=lambda x, i=eid: self.ver_calificaciones(i))
+            b_del.bind( on_press=lambda x, i=eid, e=est: popup_confirmar(
                 "Eliminar estudiante",
-                f"¿Eliminar a {e['nombre']} {e['apellidos']}?",  # e capturado por valor
+                f"¿Eliminar a {e['nombre']} {e['apellidos']}?",
                 lambda: self._eliminar(i)
             ))
 
@@ -122,7 +112,7 @@ class PantallaEstudiantes(Screen):
 
         if not registros:
             grid.add_widget(Label(text="Sin registros", color=NEGRO,
-                                  size_hint=(1, None), height=50))
+                                  size_hint=(1, None), height=56))
 
         scroll.add_widget(grid)
         filas_widgets.add_widget(scroll)
@@ -149,29 +139,30 @@ class PantallaEstudiantes(Screen):
         inner = BoxLayout(orientation="vertical", size_hint=(1, None), spacing=8)
         inner.bind(minimum_height=inner.setter("height"))
 
-        r_ctrl,   ti_ctrl   = campo("# Control", "21SC001")
-        r_nom,    ti_nom    = campo("Nombre",    "Ana")
-        r_ape,    ti_ape    = campo("Apellidos", "García Torres")
-        r_mail,   ti_mail   = campo("Correo",   "ana@est.mx")
-        r_sem,    ti_sem    = campo("Semestre",  "4", input_filter="int")
+        r_ctrl, ti_ctrl = campo("# Control", "21SC001")
+        r_nom,  ti_nom  = campo("Nombre",    "Ana")
+        r_ape,  ti_ape  = campo("Apellidos", "García Torres")
+        r_mail, ti_mail = campo("Correo",    "ana@est.mx")
+        r_sem,  ti_sem  = campo("Semestre",  "4", input_filter="int")
 
-        lbl_car = Label(text="Carrera", size_hint=(1, None), height=24,
-                        color=BLANCO, halign="left")
+        lbl_car = Label(text="Carrera", size_hint=(1, None), height=28,
+                        color=BLANCO, halign="left", font_size=15)
         spinner_car = Spinner(
             values=[c["nombre"] for c in carreras],
-            size_hint=(1, None), height=44,
+            size_hint=(1, None), height=52,
             text=carreras[0]["nombre"] if carreras else "",
+            font_size=14,
         )
 
         for w in [r_ctrl, r_nom, r_ape, r_mail, r_sem, lbl_car, spinner_car]:
             inner.add_widget(w)
 
         if est:
-            ti_ctrl.text  = est.get("num_control", "")
-            ti_nom.text   = est.get("nombre", "")
-            ti_ape.text   = est.get("apellidos", "")
-            ti_mail.text  = est.get("correo", "")
-            ti_sem.text   = str(est.get("semestre", ""))
+            ti_ctrl.text = est.get("num_control", "")
+            ti_nom.text  = est.get("nombre", "")
+            ti_ape.text  = est.get("apellidos", "")
+            ti_mail.text = est.get("correo", "")
+            ti_sem.text  = str(est.get("semestre", ""))
             car = next((c for c in carreras if c["id_carrera"] == est.get("id_carrera")), None)
             if car:
                 spinner_car.text = car["nombre"]
@@ -181,7 +172,7 @@ class PantallaEstudiantes(Screen):
 
         popup = Popup(
             title="Editar estudiante" if est else "Nuevo estudiante",
-            content=contenido, size_hint=(0.92, 0.88)
+            content=contenido, size_hint=(0.95, 0.92)
         )
 
         def guardar(x):
@@ -210,12 +201,12 @@ class PantallaEstudiantes(Screen):
                     EstudianteModel.crear(**datos)
                     popup_mensaje("Listo", "Estudiante registrado.", VERDE)
                 popup.dismiss()
-                self._cargar_tabla()
+                Clock.schedule_once(lambda dt: self._cargar_tabla(), 0)
             except Exception as e:
                 popup_mensaje("Error", str(e), ROJO)
 
         btn_grd = Button(text="Guardar", background_color=VERDE, color=BLANCO,
-                          size_hint=(1, None), height=48, font_size=15)
+                         size_hint=(1, None), height=58, font_size=16)
         btn_grd.bind(on_press=guardar)
         contenido.add_widget(btn_grd)
         popup.open()
@@ -234,9 +225,9 @@ class PantallaEstudiantes(Screen):
             for c in cals
         ]
         contenido.add_widget(TablaScroll(columnas, filas))
-        popup = Popup(title=titulo, content=contenido, size_hint=(0.95, 0.7))
-        btn = Button(text="Cerrar", size_hint=(1, None), height=44,
-                     background_color=AZUL, color=BLANCO)
+        popup = Popup(title=titulo, content=contenido, size_hint=(0.97, 0.82))
+        btn = Button(text="Cerrar", size_hint=(1, None), height=56,
+                     background_color=AZUL, color=BLANCO, font_size=15)
         btn.bind(on_press=popup.dismiss)
         contenido.add_widget(btn)
         popup.open()

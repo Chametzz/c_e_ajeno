@@ -3,7 +3,7 @@ views/pantalla_grupos.py
 Gestión de grupos: creación, listado e inscripción de estudiantes.
 """
 from kivy.clock             import Clock
-from kivy.uix.textinput import TextInput
+from kivy.uix.textinput     import TextInput
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout     import BoxLayout
 from kivy.uix.scrollview    import ScrollView
@@ -21,12 +21,12 @@ from utils.validaciones import limpiar_texto
 from views.widgets      import (BarraSuperior, TablaEncabezado,
                                  popup_confirmar, popup_mensaje, campo)
 
-AZUL     = get_color_from_hex("#1565C0")
-VERDE    = get_color_from_hex("#2E7D32")
-ROJO     = get_color_from_hex("#C62828")
-MORADO   = get_color_from_hex("#6A1B9A")
-BLANCO   = get_color_from_hex("#FFFFFF")
-NEGRO    = get_color_from_hex("#212121")
+AZUL   = get_color_from_hex("#1565C0")
+VERDE  = get_color_from_hex("#2E7D32")
+ROJO   = get_color_from_hex("#C62828")
+MORADO = get_color_from_hex("#6A1B9A")
+BLANCO = get_color_from_hex("#FFFFFF")
+NEGRO  = get_color_from_hex("#212121")
 
 
 class PantallaGrupos(Screen):
@@ -37,9 +37,9 @@ class PantallaGrupos(Screen):
         root = BoxLayout(orientation="vertical")
         root.add_widget(BarraSuperior("Grupos", self.manager))
 
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
         btn_n = Button(text="+ Nuevo", background_color=VERDE, color=BLANCO,
-                       size_hint=(None, 1), width=110)
+                       size_hint=(None, 1), width=130, font_size=15)
         btn_n.bind(on_press=lambda x: self._form())
         acciones.add_widget(btn_n)
         root.add_widget(acciones)
@@ -55,7 +55,7 @@ class PantallaGrupos(Screen):
         grid.bind(minimum_height=grid.setter("height"))
 
         for i, g in enumerate(grupos):
-            fila = BoxLayout(size_hint=(1, None), height=50, spacing=4, padding=(4, 2))
+            fila = BoxLayout(size_hint=(1, None), height=62, spacing=4, padding=(4, 4))
             bg = get_color_from_hex("#F0F4FF") if i % 2 == 0 else BLANCO
             with fila.canvas.before:
                 Color(*bg)
@@ -65,27 +65,27 @@ class PantallaGrupos(Screen):
 
             for txt in [g.get("materia",""), g.get("profesor",""),
                         g.get("aula",""),    g.get("horario",""),
-                        g.get("periodo",""), str(g.get("num_estudiantes",0))]:
-                lbl = Label(text=str(txt), color=NEGRO, font_size=11,
+                        g.get("periodo",""), str(g.get("num_estudiantes", 0))]:
+                lbl = Label(text=str(txt), color=NEGRO, font_size=12,
                             halign="center", valign="middle")
                 lbl.bind(size=lbl.setter("text_size"))
                 fila.add_widget(lbl)
 
-            btns = BoxLayout(spacing=3, size_hint=(None, 1), width=150)
-            b_ins = Button(text="Inscribir", font_size=10, background_color=MORADO, color=BLANCO)
-            b_cal = Button(text="Califs",    font_size=10, background_color=AZUL,   color=BLANCO)
-            b_del = Button(text="Borrar",    font_size=10, background_color=ROJO,   color=BLANCO)
+            btns = BoxLayout(spacing=3, size_hint=(None, 1), width=195)
+            b_ins = Button(text="Inscribir", font_size=13, background_color=MORADO, color=BLANCO)
+            b_cal = Button(text="Califs",    font_size=13, background_color=AZUL,   color=BLANCO)
+            b_del = Button(text="Borrar",    font_size=13, background_color=ROJO,   color=BLANCO)
 
             gid = g["id_grupo"]
             b_ins.bind(on_press=lambda x, i=gid: self._inscribir(i))
             b_cal.bind(on_press=lambda x, i=gid: self._calificaciones(i))
             b_del.bind(on_press=lambda x, i=gid, gn=g.get("materia", ""):
                 popup_confirmar(
-                "Eliminar grupo",
-                f"¿Eliminar grupo de {gn}?",
-                lambda: [GrupoModel.eliminar(i),
-                        Clock.schedule_once(lambda dt: self._build(), 0)]
-            ))
+                    "Eliminar grupo",
+                    f"¿Eliminar grupo de {gn}?",
+                    lambda: [GrupoModel.eliminar(i),
+                             Clock.schedule_once(lambda dt: self._build(), 0)]
+                ))
             btns.add_widget(b_ins)
             btns.add_widget(b_cal)
             btns.add_widget(b_del)
@@ -94,7 +94,7 @@ class PantallaGrupos(Screen):
 
         if not grupos:
             grid.add_widget(Label(text="Sin grupos registrados", color=NEGRO,
-                                  size_hint=(1, None), height=50))
+                                  size_hint=(1, None), height=56))
         scroll.add_widget(grid)
         outer.add_widget(scroll)
         root.add_widget(outer)
@@ -102,46 +102,47 @@ class PantallaGrupos(Screen):
 
     # ── Formulario nuevo grupo ──────────────────────
     def _form(self):
-        materias  = MateriaModel.todos()
+        materias   = MateriaModel.todos()
         profesores = ProfesorModel.todos()
-        aulas     = AulaModel.todos()
-        periodos  = PeriodoModel.todos()
+        aulas      = AulaModel.todos()
+        periodos   = PeriodoModel.todos()
 
         contenido = BoxLayout(orientation="vertical", spacing=8, padding=16)
         r1, ti_hor = campo("Horario", "Lun-Mie 07:00-09:00")
 
         def spinner(label, items):
-            lbl = Label(text=label, size_hint=(1, None), height=24,
-                        color=BLANCO, halign="left")
+            lbl = Label(text=label, size_hint=(1, None), height=28,
+                        color=BLANCO, halign="left", font_size=15)
             sp  = Spinner(values=items, text=items[0] if items else "",
-                          size_hint=(1, None), height=44)
+                          size_hint=(1, None), height=52, font_size=14)
             return lbl, sp
 
-        lbl_m, sp_m = spinner("Materia",   [f"{m['clave']} - {m['nombre']}" for m in materias])
-        lbl_p, sp_p = spinner("Profesor",  [f"{p['num_empleado']} - {p['nombre']} {p['apellidos']}" for p in profesores])
-        lbl_a, sp_a = spinner("Aula",      [f"{a['clave']} - {a['edificio']}" for a in aulas])
-        lbl_per, sp_per = spinner("Periodo", [pe["nombre"] for pe in periodos])
+        lbl_m,   sp_m   = spinner("Materia",   [f"{m['clave']} - {m['nombre']}" for m in materias])
+        lbl_p,   sp_p   = spinner("Profesor",  [f"{p['num_empleado']} - {p['nombre']} {p['apellidos']}" for p in profesores])
+        lbl_a,   sp_a   = spinner("Aula",      [f"{a['clave']} - {a['edificio']}" for a in aulas])
+        lbl_per, sp_per = spinner("Periodo",   [pe["nombre"] for pe in periodos])
 
         for w in [r1, lbl_m, sp_m, lbl_p, sp_p, lbl_a, sp_a, lbl_per, sp_per]:
             contenido.add_widget(w)
 
-        popup = Popup(title="Nuevo grupo", content=contenido, size_hint=(0.92, 0.88))
+        popup = Popup(title="Nuevo grupo", content=contenido, size_hint=(0.95, 0.92))
 
         def guardar(x):
             try:
-                id_mat = materias [sp_m.values.index(sp_m.text)]["id_materia"]
+                id_mat = materias  [sp_m.values.index(sp_m.text)]["id_materia"]
                 id_pro = profesores[sp_p.values.index(sp_p.text)]["id_profesor"]
                 id_aul = aulas     [sp_a.values.index(sp_a.text)]["id_aula"]
                 id_per = periodos  [sp_per.values.index(sp_per.text)]["id_periodo"]
                 GrupoModel.crear(limpiar_texto(ti_hor.text),
                                  id_mat, id_pro, id_aul, id_per)
-                popup.dismiss(); self._build()
+                popup.dismiss()
+                Clock.schedule_once(lambda dt: self._build(), 0)
                 popup_mensaje("Listo", "Grupo creado.", VERDE)
             except Exception as e:
                 popup_mensaje("Error", str(e), ROJO)
 
         btn = Button(text="Guardar", background_color=VERDE, color=BLANCO,
-                     size_hint=(1, None), height=48)
+                     size_hint=(1, None), height=58, font_size=16)
         btn.bind(on_press=guardar)
         contenido.add_widget(btn)
         popup.open()
@@ -151,25 +152,25 @@ class PantallaGrupos(Screen):
         estudiantes = EstudianteModel.todos()
         inscritos   = {e["id_estudiante"] for e in GrupoModel.estudiantes(id_grupo)}
         disponibles = [e for e in estudiantes if e["id_estudiante"] not in inscritos]
- 
+
         if not disponibles:
             popup_mensaje("Info", "Todos los estudiantes ya están inscritos.", AZUL)
             return
- 
-        contenido = BoxLayout(orientation="vertical", spacing=8, padding=16)
+
+        contenido = BoxLayout(orientation="vertical", spacing=10, padding=16)
         lbl = Label(text="Selecciona estudiante:", size_hint=(1, None),
-                    height=30, color=NEGRO)
+                    height=32, color=NEGRO, font_size=15)
         sp  = Spinner(
             values=[f"{e['num_control']} - {e['nombre']} {e['apellidos']}" for e in disponibles],
             text=f"{disponibles[0]['num_control']} - {disponibles[0]['nombre']} {disponibles[0]['apellidos']}",
-            size_hint=(1, None), height=44
+            size_hint=(1, None), height=52, font_size=14,
         )
         contenido.add_widget(lbl)
         contenido.add_widget(sp)
- 
+
         popup = Popup(title="Inscribir estudiante", content=contenido,
-                      size_hint=(0.85, 0.35))
- 
+                      size_hint=(0.90, 0.38))
+
         def confirmar(x):
             idx    = sp.values.index(sp.text)
             id_est = disponibles[idx]["id_estudiante"]
@@ -180,9 +181,9 @@ class PantallaGrupos(Screen):
                 popup_mensaje("Listo", "Estudiante inscrito.", VERDE)
             except Exception as e:
                 popup_mensaje("Error", str(e), ROJO)
- 
+
         btn = Button(text="Inscribir", background_color=MORADO, color=BLANCO,
-                     size_hint=(1, None), height=48)
+                     size_hint=(1, None), height=58, font_size=16)
         btn.bind(on_press=confirmar)
         contenido.add_widget(btn)
         popup.open()
@@ -198,35 +199,37 @@ class PantallaGrupos(Screen):
         grid.bind(minimum_height=grid.setter("height"))
 
         # Encabezado
-        enc = BoxLayout(size_hint=(1, None), height=40)
+        enc = BoxLayout(size_hint=(1, None), height=52)
         with enc.canvas.before:
             Color(*get_color_from_hex("#1E3A5F"))
-            r = Rectangle(size=enc.size, pos=enc.pos)
-        enc.bind(size=lambda inst, v: setattr(r, "size", v),
-                 pos =lambda inst, v: setattr(r, "pos",  v))
+            rect = Rectangle(size=enc.size, pos=enc.pos)
+        enc.bind(size=lambda inst, v, r=rect: setattr(r, "size", v),
+                 pos =lambda inst, v, r=rect: setattr(r, "pos",  v))
         for t in ["Estudiante", "Parcial", "Final", "Obs"]:
             enc.add_widget(Label(text=f"[b]{t}[/b]", markup=True,
-                                 color=BLANCO, font_size=12))
+                                 color=BLANCO, font_size=14))
         grid.add_widget(enc)
 
         for c in cals:
-            fila = BoxLayout(size_hint=(1, None), height=44, spacing=4)
+            fila = BoxLayout(size_hint=(1, None), height=56, spacing=4)
 
-            # Campo parcial
-            ti_p = TextInput(text=str(c["calificacion_parcial"]),
-                             input_filter="float", font_size=13,
+            def _cal_str(v):
+                return str(v) if v is not None else ""
+
+            ti_p = TextInput(text=_cal_str(c["calificacion_parcial"]),
+                             input_filter="float", font_size=14,
                              multiline=False, size_hint=(1, 1))
-            ti_f = TextInput(text=str(c["calificacion_final"]),
-                             input_filter="float", font_size=13,
+            ti_f = TextInput(text=_cal_str(c["calificacion_final"]),
+                             input_filter="float", font_size=14,
                              multiline=False, size_hint=(1, 1))
             ti_o = TextInput(text=c.get("observaciones") or "",
-                             font_size=12, multiline=False, size_hint=(2, 1))
+                             font_size=13, multiline=False, size_hint=(2, 1))
 
-            lbl_e = Label(text=c.get("estudiante", ""), color=BLANCO,
-                          font_size=11, size_hint=(2, 1))
+            lbl_e = Label(text=c.get("estudiante", ""), color=NEGRO,
+                          font_size=13, size_hint=(2, 1))
 
-            btn_s = Button(text="💾", size_hint=(None, 1), width=40,
-                           background_color=VERDE, color=BLANCO)
+            btn_s = Button(text="💾", size_hint=(None, 1), width=52,
+                           background_color=VERDE, color=BLANCO, font_size=18)
             cid = c["id_calificacion"]
             btn_s.bind(on_press=lambda x, cid=cid, tp=ti_p, tf=ti_f, to=ti_o:
                 self._guardar_cal(cid, tp.text, tf.text, to.text))
@@ -242,9 +245,9 @@ class PantallaGrupos(Screen):
         contenido.add_widget(scroll)
 
         popup = Popup(title="Calificaciones del grupo",
-                      content=contenido, size_hint=(0.97, 0.85))
+                      content=contenido, size_hint=(0.97, 0.88))
         btn_c = Button(text="Cerrar", background_color=AZUL, color=BLANCO,
-                       size_hint=(1, None), height=44)
+                       size_hint=(1, None), height=56, font_size=15)
         btn_c.bind(on_press=popup.dismiss)
         contenido.add_widget(btn_c)
         popup.open()
@@ -254,5 +257,5 @@ class PantallaGrupos(Screen):
         from utils.validaciones import validar_calificacion
         p = float(parcial) if validar_calificacion(parcial) else None
         f = float(final)   if validar_calificacion(final)   else None
-        CalificacionModel.actualizar(id_cal, p, f, obs or None)
+        CalificacionModel.actualizar(id_cal, p, f, obs)
         popup_mensaje("Listo", "Calificación guardada.", VERDE)

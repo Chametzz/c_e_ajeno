@@ -44,7 +44,7 @@ def _grid_con_botones(registros, columnas_data, on_editar, on_borrar):
     grid.bind(minimum_height=grid.setter("height"))
 
     for i, reg in enumerate(registros):
-        fila = BoxLayout(size_hint=(1, None), height=44, spacing=4, padding=(4, 2))
+        fila = BoxLayout(size_hint=(1, None), height=60, spacing=4, padding=(4, 4))
         bg = get_color_from_hex("#F0F4FF") if i % 2 == 0 else BLANCO
         with fila.canvas.before:
             Color(*bg)
@@ -54,14 +54,14 @@ def _grid_con_botones(registros, columnas_data, on_editar, on_borrar):
 
         for fn in columnas_data.values():
             txt = fn(reg) if callable(fn) else str(reg.get(fn, ""))
-            lbl = Label(text=str(txt), color=NEGRO, font_size=12,
+            lbl = Label(text=str(txt), color=NEGRO, font_size=13,
                         halign="center", valign="middle")
             lbl.bind(size=lbl.setter("text_size"))
             fila.add_widget(lbl)
 
-        btns = BoxLayout(spacing=4, size_hint=(None, 1), width=120)
-        b_e = Button(text="Editar", font_size=11, background_color=AZUL, color=BLANCO)
-        b_d = Button(text="Borrar", font_size=11, background_color=ROJO, color=BLANCO)
+        btns = BoxLayout(spacing=4, size_hint=(None, 1), width=150)
+        b_e = Button(text="Editar", font_size=13, background_color=AZUL, color=BLANCO)
+        b_d = Button(text="Borrar", font_size=13, background_color=ROJO, color=BLANCO)
         b_e.bind(on_press=lambda x, r=reg: on_editar(r))
         b_d.bind(on_press=lambda x, r=reg: on_borrar(r))
         btns.add_widget(b_e)
@@ -89,9 +89,9 @@ class PantallaProfesores(Screen):
         root = BoxLayout(orientation="vertical")
         root.add_widget(BarraSuperior("Profesores", self.manager))
 
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
         btn_n = Button(text="+ Nuevo", background_color=VERDE, color=BLANCO,
-                       size_hint=(None, 1), width=110)
+                       size_hint=(None, 1), width=130)
         btn_n.bind(on_press=lambda x: self._form())
         acciones.add_widget(btn_n)
         root.add_widget(acciones)
@@ -160,7 +160,7 @@ class PantallaProfesores(Screen):
                 popup_mensaje("Error", str(e), ROJO)
 
         btn = Button(text="Guardar", background_color=VERDE, color=BLANCO,
-                     size_hint=(1, None), height=48)
+                     size_hint=(1, None), height=58, font_size=16)
         btn.bind(on_press=guardar)
         contenido.add_widget(btn)
         popup.open()
@@ -177,9 +177,9 @@ class PantallaMaterias(Screen):
         root = BoxLayout(orientation="vertical")
         root.add_widget(BarraSuperior("Materias", self.manager))
 
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
         btn_n = Button(text="+ Nueva", background_color=VERDE, color=BLANCO,
-                       size_hint=(None, 1), width=110)
+                       size_hint=(None, 1), width=130)
         btn_n.bind(on_press=lambda x: self._form())
         acciones.add_widget(btn_n)
         root.add_widget(acciones)
@@ -217,11 +217,11 @@ class PantallaMaterias(Screen):
         r3, ti_cred  = campo("Créditos", "5", input_filter="int")
         r4, ti_sem   = campo("Semestre", "4", input_filter="int")
 
-        lbl_c = Label(text="Carrera", size_hint=(1, None), height=24,
+        lbl_c = Label(text="Carrera", size_hint=(1, None), height=28,
                       color=BLANCO, halign="left")
         sp_c  = Spinner(values=[c["nombre"] for c in carreras],
                         text=carreras[0]["nombre"] if carreras else "",
-                        size_hint=(1, None), height=44)
+                        size_hint=(1, None), height=52, font_size=14)
 
         for w in [r1, r2, r3, r4, lbl_c, sp_c]: contenido.add_widget(w)
 
@@ -253,7 +253,7 @@ class PantallaMaterias(Screen):
                 popup_mensaje("Error", str(e), ROJO)
 
         btn = Button(text="Guardar", background_color=VERDE, color=BLANCO,
-                     size_hint=(1, None), height=48)
+                     size_hint=(1, None), height=58, font_size=16)
         btn.bind(on_press=guardar)
         contenido.add_widget(btn)
         popup.open()
@@ -270,9 +270,9 @@ class PantallaAulas(Screen):
         root = BoxLayout(orientation="vertical")
         root.add_widget(BarraSuperior("Aulas", self.manager))
 
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
         btn_n = Button(text="+ Nueva", background_color=VERDE, color=BLANCO,
-                       size_hint=(None, 1), width=110)
+                       size_hint=(None, 1), width=130)
         btn_n.bind(on_press=lambda x: self._form())
         acciones.add_widget(btn_n)
         root.add_widget(acciones)
@@ -303,9 +303,9 @@ class PantallaAulas(Screen):
         r2, ti_edif  = campo("Edificio",  "Edificio A")
         r3, ti_cap   = campo("Capacidad", "35", input_filter="int")
 
-        lbl_t = Label(text="Tipo", size_hint=(1, None), height=24, color=BLANCO, halign="left")
+        lbl_t = Label(text="Tipo", size_hint=(1, None), height=28, color=BLANCO, halign="left", font_size=15)
         sp_t  = Spinner(values=["salon", "laboratorio", "taller", "auditorio"],
-                        text="salon", size_hint=(1, None), height=44)
+                        text="salon", size_hint=(1, None), height=52, font_size=14)
 
         for w in [r1, r2, r3, lbl_t, sp_t]: contenido.add_widget(w)
 
@@ -331,7 +331,7 @@ class PantallaAulas(Screen):
                 popup_mensaje("Error", str(e), ROJO)
 
         btn = Button(text="Guardar", background_color=VERDE, color=BLANCO,
-                     size_hint=(1, None), height=48)
+                     size_hint=(1, None), height=58, font_size=16)
         btn.bind(on_press=guardar)
         contenido.add_widget(btn)
         popup.open()
@@ -348,9 +348,9 @@ class PantallaPeriodos(Screen):
         root = BoxLayout(orientation="vertical")
         root.add_widget(BarraSuperior("Periodos Semestrales", self.manager))
 
-        acciones = BoxLayout(size_hint=(1, None), height=50, spacing=8, padding=(10, 4))
+        acciones = BoxLayout(size_hint=(1, None), height=62, spacing=8, padding=(10, 6))
         btn_n = Button(text="+ Nuevo", background_color=VERDE, color=BLANCO,
-                       size_hint=(None, 1), width=110)
+                       size_hint=(None, 1), width=130)
         btn_n.bind(on_press=lambda x: self._form())
         acciones.add_widget(btn_n)
         root.add_widget(acciones)
@@ -381,10 +381,10 @@ class PantallaPeriodos(Screen):
         r2, ti_ini   = campo("Fecha inicio","2026-08-10")
         r3, ti_fin   = campo("Fecha fin",   "2026-12-18")
 
-        lbl_e = Label(text="Estado", size_hint=(1, None), height=24,
+        lbl_e = Label(text="Estado", size_hint=(1, None), height=28,
                       color=BLANCO, halign="left")
         sp_e  = Spinner(values=["activo", "cerrado", "pendiente"],
-                        text="activo", size_hint=(1, None), height=44)
+                        text="activo", size_hint=(1, None), height=52, font_size=14)
 
         for w in [r1, r2, r3, lbl_e, sp_e]: contenido.add_widget(w)
 
@@ -413,7 +413,7 @@ class PantallaPeriodos(Screen):
                 popup_mensaje("Error", str(e), ROJO)
 
         btn = Button(text="Guardar", background_color=VERDE, color=BLANCO,
-                     size_hint=(1, None), height=48)
+                     size_hint=(1, None), height=58, font_size=16)
         btn.bind(on_press=guardar)
         contenido.add_widget(btn)
         popup.open()
